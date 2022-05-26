@@ -1,0 +1,36 @@
+pipeline {
+	environment {
+		registry = "davidgaric/service2"
+		registryCredential = 'dockerhub'
+		dockerImage = ''
+	}
+	agent any
+	stages {
+		stage('Cloning') {
+			steps {
+				git([url: 'https://github.com/fliBear/microservice2AVL.git', branch: 'main'])
+			}
+		}
+		stage('Building') {
+			steps{
+				script {
+					dockerImage = docker.build registry + ":v"+ "$BUILD_NUMBER" + ".0"
+				}
+			}
+		}
+		stage('Test') {
+            steps {
+                echo 'Testing...'
+            }
+        }
+		stage('Deploy our image') {
+			steps{
+				script {
+					docker.withRegistry( '', registryCredential ) {
+						dockerImage.push()
+					}
+				}
+			}
+		}
+	}
+}
